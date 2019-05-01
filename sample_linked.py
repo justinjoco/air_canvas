@@ -12,6 +12,7 @@ import numpy as np
 import time
 from datetime import datetime
 import sys
+import math
 import pygame 
 import RPi.GPIO as GPIO
 import os
@@ -32,6 +33,12 @@ screen = pygame.display.set_mode(size)
 radius = 2
 coords = [(200,120),(200,121),(200,122),(200,123)]
 RED = 255,0,0
+
+# Margin settings
+L_MARGIN = 10
+R_MARGIN = 310
+T_MARGIN = 10
+B_MARGIN = 230
 
 screen.fill(black)
 
@@ -212,15 +219,26 @@ def manage_image_opr(frame, hand_hist):
 	return None
 # =================== PYGAME DRAWING ==================== #
 
+def in_bounds(coord):
+    return (coord[0] >= L_MARGIN) and (coord[0] <= R_MARGIN) and (coord[1] >= T_MARGIN) and (coord[1] <= B_MARGIN)
+    
+
 # Draw a dot
 # Screen res is 640x480
+
+def l2_distance(prev_coord, curr_coord):
+    return math.sqrt((curr_coord[0]-prev_coord[0])**2 + (curr_coord[1]-prev_coord[1])**2)
+
+
 def draw_dot(coord): 
-	if coord != None:
-		coord_new = int(coord[0]/2), int(coord[1]/2)
-		print("Dot drawn at: " + str(coord_new) ) 
-	#	time.sleep(.02)
-		pygame.draw.circle(screen, RED, coord_new, radius)
-		pygame.display.flip()
+    if coord != None:
+	coord_new = int(coord[0]/2), int(coord[1]/2)
+	print("Dot drawn at: " + str(coord_new) ) 
+	#time.sleep(.02)
+    
+	if in_bounds(coord_new):
+	    pygame.draw.circle(screen, RED, coord_new, radius)
+	    pygame.display.flip()
 		      
 	
 	
@@ -228,6 +246,7 @@ def draw_dot(coord):
 # ================== MAIN ================== #
 def main():
     global hand_hist
+    draw = False
     is_hand_hist_created = False
     capture = cv2.VideoCapture(0)
     
@@ -239,40 +258,50 @@ def main():
     #capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
 	
-
-	
+    prev = None
+    curr = None
+    draw_thresh = 10
     while capture.isOpened():
-		try:
+	try:
 			
 			# wait for keypress 
-			pressed_key = cv2.waitKey(1)
-			_, frame = capture.read()
+	    pressed_key = cv2.waitKey(1)
+	    _, frame = capture.read()
 
-			# Press z to create hand histogram
-			if pressed_key & 0xFF == ord('z'):
-				is_hand_hist_created = True
-				hand_hist = hand_histogram(frame)
+	    # Press z to create hand histogram
+	    if pressed_key & 0xFF == ord('z'):
+		is_hand_hist_created = True
+		hand_hist = hand_histogram(frame)
 
-			if is_hand_hist_created:
-				far_point = manage_image_opr(frame, hand_hist)
+	    if is_hand_hist_created:
+		far_point = manage_image_opr(frame, hand_hist)
+		
+		# Draw dot located at centroid 
+		ctr, mc = get_centroid(frame, hand_hist)
+		
+		if pressed_key & 0xFF == ord("d"): draw = not draw
+		if far_point is not None:
+		    curr = far_point
+		    if draw and l2_distance(prev, curr) <= draw_thresh: 
+			draw_dot(far_point)
+		
+		    if prev is None:
+			prev = far_point
+		    else:
+			prev = curr
+		# Draw dot located at farthest point (would be better)
+
+	    else:
+		frame = draw_rect(frame)
+
+	    cv2.imshow("Live Feed", rescale_frame(frame))
+	    
+
+	    if pressed_key == 27:
+		break
 				
-				# Draw dot located at centroid 
-				ctr, mc = get_centroid(frame, hand_hist)
-				if far_point is not None: draw_dot(far_point)
-				
-				# Draw dot located at farthest point (would be better)
-
-			else:
-				frame = draw_rect(frame)
-
-			cv2.imshow("Live Feed", rescale_frame(frame))
-			
-
-			if pressed_key == 27:
-				break
-				
-		except KeyboardInterrupt:
-			break
+	except KeyboardInterrupt:
+	    break
 
     cv2.destroyAllWindows()
     capture.release()
