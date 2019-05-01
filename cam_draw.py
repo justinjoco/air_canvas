@@ -21,6 +21,11 @@ import os
 os.putenv('SDL_VIDEODRIVER','fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb1')
 
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+
 # Initialize game
 pygame.init()
 
@@ -33,6 +38,11 @@ screen = pygame.display.set_mode(size)
 radius = 2
 coords = [(200,120),(200,121),(200,122),(200,123)]
 RED = 255,0,0
+GREEN = 0,255,0
+BLUE = 0,0,255
+
+
+colors = [("RED", RED), ("GREEN", GREEN), ("BLUE", BLUE)]
 
 # Margin settings
 L_MARGIN = 10
@@ -41,6 +51,7 @@ T_MARGIN = 10
 B_MARGIN = 230
 
 screen.fill(black)
+
 
 # ======= SAMPLE_CAM3.PY CODE ============ #
 
@@ -53,6 +64,8 @@ hand_rect_one_y = None
 
 hand_rect_two_x = None
 hand_rect_two_y = None
+
+curr_color = colors[0][1]
 
 
 def rescale_frame(frame, wpercent=130, hpercent=130):
@@ -232,12 +245,12 @@ def l2_distance(prev_coord, curr_coord):
 
 def draw_dot(coord): 
     if coord != None:
-	coord_new = int(coord[0]/2), int(coord[1]/2)
-	print("Dot drawn at: " + str(coord_new) ) 
+	coord_scaled = int(coord[0]/2), int(coord[1]/2)
+	print("Dot drawn at: " + str(coord_scaled) ) 
 	#time.sleep(.02)
     
-	if in_bounds(coord_new):
-	    pygame.draw.circle(screen, RED, coord_new, radius)
+	if in_bounds(coord_scaled):
+	    pygame.draw.circle(screen, curr_color, coord_scaled, radius)
 	    pygame.display.flip()
 		      
 	
@@ -245,7 +258,7 @@ def draw_dot(coord):
 
 # ================== MAIN ================== #
 def main():
-    global hand_hist
+    global hand_hist, radius, curr_color
     draw = False
     is_hand_hist_created = False
     capture = cv2.VideoCapture(0)
@@ -254,8 +267,6 @@ def main():
     videoWidth = capture.get(cv2.CAP_PROP_FRAME_WIDTH)
     videoHeight = capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
-    #capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-    #capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
 	
     prev = None
@@ -296,8 +307,12 @@ def main():
 
 	    cv2.imshow("Live Feed", rescale_frame(frame))
 	    
+	      
+	if not GPIO.input(27):
+	    print("End game")
 
-	    if pressed_key == 27:
+
+	    if pressed_key & 0xFF == ord('q'):
 		break
 				
 	except KeyboardInterrupt:
