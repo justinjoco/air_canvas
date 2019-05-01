@@ -10,7 +10,7 @@ import pygame
 import time
 import RPi.GPIO as GPIO
 import os
-import time
+
 
 #Set environment variables
 os.putenv('SDL_VIDEODRIVER','fbcon')

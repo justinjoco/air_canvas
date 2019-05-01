@@ -93,8 +93,11 @@ videoHeight = videoCap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
 
 print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
 
-bgModel = cv2.BackgroundSubtractorMOG2(0, bgSubThreshold)
+bgModel = cv2.BackgroundSubtractorMOG()
 
+ret, first = videoCap.read()
+first_gray = cv2.cvtColor(first, cv2.COLOR_BGR2GRAY)
+first_gray = cv2.GaussianBlur(first_gray,(21,21), 0)
 
 start = time.time()
 counter = 0
@@ -111,45 +114,55 @@ while(True):
         #Get the frame
         ret, frame = videoCap.read()
 
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (21,21), 0)
 
+        difference = cv2.absdiff(gray,first_gray)
+
+        thresh = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
+     #   thresh = cv2.dilate(thresh, None, iterations=2)
+
+        contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+       
 
         mask_time1 = time.time()
 
         #Create a foreground mask
      #   if start:
-        fgMask = bgModel.apply(frame)
+
+   #     fgMask = bgModel.apply(frame)
       #      start = False
         
         print("fgMask time: " + str(time.time()-mask_time1))
 
-
+        '''
         mask_time2 = time.time()
 
         #  kernel = np.ones((3,3), np.uint8)
       #  fgMask = cv2.erode(fgMask, kernel, iterations=1)
 
         #Apply mask to frame to get hand
-        fg_img = cv2.bitwise_and(frame, frame, mask=fgMask)
+     #   fg_img = cv2.bitwise_and(frame, frame, mask=fgMask)
 
-        print("fg_img time: " + str(time.time()-mask_time2))
+    #    print("fg_img time: " + str(time.time()-mask_time2))
 
 
-        mask_time3 = time.time()
+     #   mask_time3 = time.time()
 
         #Convert to grayscale
-        gray_img = cv2.cvtColor(fg_img, cv2.COLOR_BGR2GRAY)
+      #  gray_img = cv2.cvtColor(fg_img, cv2.COLOR_BGR2GRAY)
         
         print("gray_img time: " + str(time.time()-mask_time3))
 
         
-        mask_time4 = time.time()
+      #  mask_time4 = time.time()
 
         #Smooth gray image with gaussian filter
-        smooth_img = cv2.GaussianBlur(gray_img, (blurValue, blurValue),0)
+     #   smooth_img = cv2.GaussianBlur(gray_img, (blurValue, blurValue),0)
         
-        print("smooth_img time: " + str(time.time()-mask_time4))
+    #    print("smooth_img time: " + str(time.time()-mask_time4))
 
-        mask_time5 = time.time()
+     #   mask_time5 = time.time()
 
         #Create binary image
         ret, binary = cv2.threshold(smooth_img, threshold, 255, cv2.THRESH_BINARY)
@@ -161,8 +174,13 @@ while(True):
 
         counter+=1
 
-        cv2.imshow("frame", binary)
-        cv2.waitKey(1)
+       
+        '''
+       
+
+        cv2.imshow("frame", thresh)
+        if (cv2.waitKey(1) & 0xFF) == ord('q'):
+            break
 
     except KeyboardInterrupt:
         break
