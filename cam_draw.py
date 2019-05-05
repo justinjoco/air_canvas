@@ -23,7 +23,11 @@ os.putenv('SDL_FBDEV', '/dev/fb1')
 
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Change color
+GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Size up
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Size down
+GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Quit
 
 
 # Initialize game
@@ -40,9 +44,12 @@ coords = [(200,120),(200,121),(200,122),(200,123)]
 RED = 255,0,0
 GREEN = 0,255,0
 BLUE = 0,0,255
+WHITE = 255,255,255
 
+colors = [RED, GREEN, BLUE]
 
-colors = [("RED", RED), ("GREEN", GREEN), ("BLUE", BLUE)]
+color_index = 0
+curr_color = RED
 
 # Margin settings
 L_MARGIN = 10
@@ -65,7 +72,7 @@ hand_rect_one_y = None
 hand_rect_two_x = None
 hand_rect_two_y = None
 
-curr_color = colors[0][1]
+
 
 
 def rescale_frame(frame, wpercent=130, hpercent=130):
@@ -243,22 +250,48 @@ def l2_distance(prev_coord, curr_coord):
     return math.sqrt((curr_coord[0]-prev_coord[0])**2 + (curr_coord[1]-prev_coord[1])**2)
 
 
+def interpolate(prev_coord, curr_coord):
+    
+    if (prev_coord is not None) and (curr_coord is not None):
+	prev_scaled = 320 - int(prev_coord[0]/2), int(prev_coord[1]/2)
+	curr_scaled = 320 - int(curr_coord[0]/2), int(curr_coord[1]/2)
+	
+	pygame.draw.line(screen, curr_color, prev_scaled, curr_scaled, radius*2)
+	pygame.display.flip()
+
+
 def draw_dot(coord): 
-    if coord != None:
-	coord_scaled = int(coord[0]/2), int(coord[1]/2)
+    if (coord != None):
+	coord_scaled = 320 - int(coord[0]/2), int(coord[1]/2)
+	#prev_scaled = 320 - int(prev_coord[0]/2), int(prev_coord[1]/2)
 	print("Dot drawn at: " + str(coord_scaled) ) 
 	#time.sleep(.02)
     
 	if in_bounds(coord_scaled):
 	    pygame.draw.circle(screen, curr_color, coord_scaled, radius)
+	   #pygame.draw.line(screen, BLUE, prev_scaled, coord_scaled, radius*2)
 	    pygame.display.flip()
 		      
-	
+def change_color():
+    global curr_color, color_index
+    color_index +=1 
+    if color_index >= len(colors):
+	color_index = 0
+    curr_color = colors[color_index]
+    print(curr_color)
+    
+def change_radius(up_or_down):
+    global radius
+    if up_or_down:
+	radius+=1
+    else:
+	radius-=1
+    
 	
 
 # ================== MAIN ================== #
 def main():
-    global hand_hist, radius, curr_color
+    global hand_hist
     draw = False
     is_hand_hist_created = False
     capture = cv2.VideoCapture(0)
@@ -271,6 +304,8 @@ def main():
 	
     prev = None
     curr = None
+    prev_dot = None
+    curr_dot = None
     draw_thresh = 10
     while capture.isOpened():
 	try:
@@ -287,32 +322,53 @@ def main():
 	    if is_hand_hist_created:
 		far_point = manage_image_opr(frame, hand_hist)
 		
-		# Draw dot located at centroid 
+		# Draw dot located at farthest point
 		ctr, mc = get_centroid(frame, hand_hist)
 		
 		if pressed_key & 0xFF == ord("d"): draw = not draw
 		if far_point is not None:
 		    curr = far_point
-		    if draw and l2_distance(prev, curr) <= draw_thresh: 
-			draw_dot(far_point)
+		   
+		    if draw:
+			if l2_distance(prev, curr) <= draw_thresh:
+			    prev_dot = curr_dot
+			    curr_dot = far_point
+			    draw_dot(far_point)
+			    interpolate(prev_dot,curr_dot)
+			else:
+			    interpolate(prev_dot, curr_dot)
+	
 		
 		    if prev is None:
 			prev = far_point
 		    else:
 			prev = curr
-		# Draw dot located at farthest point (would be better)
-
+		# Interpolate
+		    
+		    
 	    else:
 		frame = draw_rect(frame)
 
 	    cv2.imshow("Live Feed", rescale_frame(frame))
 	    
 	      
-	if not GPIO.input(27):
-	    print("End game")
-
+	
+	    
 
 	    if pressed_key & 0xFF == ord('q'):
+		break
+		
+	    if not GPIO.input(17):
+		change_color()
+	    
+	    if not GPIO.input(22):
+		change_radius(True)
+	    
+	    if not GPIO.input(23):
+		change_radius(False)
+		
+	    if not GPIO.input(27):
+		print("End game")
 		break
 				
 	except KeyboardInterrupt:
