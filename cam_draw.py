@@ -33,10 +33,13 @@ GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Quit
 # Initialize game
 pygame.init()
 
+
 # Screen settings 
 size = width, height = 320, 240
 black = 0,0,0
 screen = pygame.display.set_mode(size)
+
+
 
 # Brush settings 
 radius = 2
@@ -45,8 +48,9 @@ RED = 255,0,0
 GREEN = 0,255,0
 BLUE = 0,0,255
 WHITE = 255,255,255
+BLACK = 0,0,0
 
-colors = [RED, GREEN, BLUE]
+colors = [RED, GREEN, BLUE, WHITE, BLACK]
 
 color_index = 0
 curr_color = RED
@@ -58,6 +62,14 @@ T_MARGIN = 10
 B_MARGIN = 230
 
 screen.fill(black)
+
+'''
+myfont = pygame.font.Font(None, 20)
+textsurface = myfont.render('Some Text', True, WHITE)
+rect = textsurface.get_rect(center=(30,30))
+screen.blit(textsurface, rect) 
+pygame.display.flip()
+'''
 
 
 # ======= SAMPLE_CAM3.PY CODE ============ #
@@ -306,7 +318,7 @@ def main():
     curr = None
     prev_dot = None
     curr_dot = None
-    draw_thresh = 10
+    draw_thresh = 20
     while capture.isOpened():
 	try:
 			
