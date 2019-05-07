@@ -14,15 +14,13 @@ from datetime import datetime
 import sys
 import math
 import pygame 
-from pygame.locals import *
 import RPi.GPIO as GPIO
 import os
 
 # Set environment variables
 os.putenv('SDL_VIDEODRIVER','fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb1')
-os.putenv('SDL_MOUSEDRV', 'TSLIB')      # track mouse clicks 
-os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
+
 
 GPIO.setmode(GPIO.BCM)
 
@@ -63,14 +61,10 @@ R_MARGIN = 310
 T_MARGIN = 10
 B_MARGIN = 230
 
-BTN_SIZE = 50
-CENTER_POS = 160,120
-
 screen.fill(black)
 
-
-font = pygame.font.Font(None, 20)
 '''
+myfont = pygame.font.Font(None, 20)
 textsurface = myfont.render('Some Text', True, WHITE)
 rect = textsurface.get_rect(center=(30,30))
 screen.blit(textsurface, rect) 
@@ -80,9 +74,14 @@ pygame.display.flip()
 
 # ======= SAMPLE_CAM3.PY CODE ============ #
 
-# Setup screen variables 
+# Setup video capture variables 
+capture = cv2.VideoCapture(0)
 hand_hist = None
-traverse_point = []
+draw = False
+is_hand_hist_created = False
+
+
+traverse_point  = []
 total_rectangle = 9
 hand_rect_one_x = None
 hand_rect_one_y = None
@@ -90,7 +89,12 @@ hand_rect_one_y = None
 hand_rect_two_x = None
 hand_rect_two_y = None
 
-
+# Current and previous point trackers
+prev = None
+curr = None
+prev_dot = None
+curr_dot = None
+draw_thresh = 20
 
 
 def rescale_frame(frame, wpercent=130, hpercent=130):
@@ -214,7 +218,7 @@ def draw_circles(frame, traverse_point):
             cv2.circle(frame, traverse_point[i], int(5 - (5 * i * 3) / 100), [0, 255, 255], -1)
 	
 	
-# ================= TRACE HAND ================= #
+# ======================== TRACE HAND ======================== #
 
 def get_centroid(frame, hand_hist):
     hist_mask_image = hist_masking(frame, hand_hist)
@@ -241,7 +245,7 @@ def manage_image_opr(frame, hand_hist):
         hull = cv2.convexHull(max_cont, returnPoints=False)
         defects = cv2.convexityDefects(max_cont, hull)
         far_point = farthest_point(defects, max_cont, cnt_centroid)
-        print("Centroid : " + str(cnt_centroid) + ", farthest Point : " + str(far_point))
+       # print("Centroid : " + str(cnt_centroid) + ", farthest Point : " + str(far_point))
         
        
         cv2.circle(frame, far_point, 5, [0, 0, 255], -1)
@@ -255,6 +259,8 @@ def manage_image_opr(frame, hand_hist):
         return far_point
     else:
 	return None
+	
+	
 # =================== PYGAME DRAWING ==================== #
 
 def in_bounds(coord):
@@ -305,133 +311,255 @@ def change_radius(up_or_down):
     else:
 	radius-=1
     
+    
+# ==================================================================== #
+# |                      MULTICORE FUNCTIONS 			     | #
+# ==================================================================== #
 	
-
-# ================== MAIN ================== #
-def main():
+# Master process function	
+def master_process(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start):
     global hand_hist
-    draw = False
-    is_hand_hist_created = False
-    capture = cv2.VideoCapture(0)
+    global draw 
+    global is_hand_hist_created
+    global capture
     
+    # Time variables
+    last_receive_time = 0
+    start_time_ms = 0
+    contour_read = False
+    start_time = 0
+    start_datetime = datetime.now()
+    
+    # Current and previous point trackers
+    global prev 
+    global curr 
+    global prev_dot 
+    global curr_dot
+    global draw_thresh 
+	        
+    # Pygame screen setup (black background)
     screen.fill(black)
-    videoWidth = capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-    videoHeight = capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
-    print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
-	
-    prev = None
-    curr = None
-    prev_dot = None
-    curr_dot = None
-    draw_thresh = 20
-    
-    # buttons 
-    pygame.draw.circle(screen, BLUE, CENTER_POS, BTN_SIZE) 
-    start_btn = font.render("START", True, WHITE)
-    start_btn_rect = start_btn.get_rect(center=CENTER_POS)
-    screen.blit(start_btn,start_btn_rect)
-    
-    pygame.display.flip() 
-   
-    
-
-    while capture.isOpened():
+    while (run_flag.value and capture.isOpened()):
 	try:
-			
-			# wait for keypress 
+		    
+	    # Wait for keypress 
 	    pressed_key = cv2.waitKey(1)
 	    _, frame = capture.read()
 
-
-
-	    for event in pygame.event.get():
-                if (event.type is MOUSEBUTTONDOWN):
-                    pos = pygame.mouse.get_pos()
-                elif(event.type is MOUSEBUTTONUP):
-                    pos = pygame.mouse.get_pos()
-                    x, y = pos
-                    if y >= CENTER_POS[1]-BTN_SIZE and y<=CENTER_POS[1]+BTN_SIZE  and x>=CENTER_POS[0] - BTN_SIZE  and x<=CENTER_POS[0] + BTN_SIZE:
-                        if not is_hand_hist_created and not draw: 
-			    is_hand_hist_created = True
-			    hand_hist = hand_histogram(frame)
-			    screen.fill(black)
-			    
-			    
-			    pygame.draw.circle(screen, GREEN, CENTER_POS, BTN_SIZE) 
-			    draw_btn = font.render("DRAW", True, WHITE)
-			    draw_btn_rect = draw_btn.get_rect(center=CENTER_POS)
-			    screen.blit(draw_btn,draw_btn_rect)
-			    pygame.display.flip() 
-			else:
-			    if not draw:
-				draw = not draw
-				screen.fill(black)
-
 	    # Press z to create hand histogram
-	    '''
 	    if pressed_key & 0xFF == ord('z'):
 		is_hand_hist_created = True
 		hand_hist = hand_histogram(frame)
-	    '''
-	    	    
 
-	    if is_hand_hist_created:
-		far_point = manage_image_opr(frame, hand_hist)
-		
-		# Draw dot located at farthest point
-		ctr, mc = get_centroid(frame, hand_hist)
-		
-		if pressed_key & 0xFF == ord("d"): draw = not draw
-		if far_point is not None:
-		    curr = far_point
-		   
-		    if draw:
-			if l2_distance(prev, curr) <= draw_thresh:
-			    prev_dot = curr_dot
-			    curr_dot = far_point
-			    draw_dot(far_point)
-			    interpolate(prev_dot,curr_dot)
-			else:
-			    interpolate(prev_dot, curr_dot)
-	
-		
-		    if prev is None:
-			prev = far_point
-		    else:
-			prev = curr
-		# Interpolate
-		    
-		    
-	    else:
-		frame = draw_rect(frame)
-
-	    cv2.imshow("Live Feed", rescale_frame(frame))
+	    # Check if time since last send to queue exceeds 30ms
+	    current_time = datetime.now()
+	    time_dif = current_time - start_datetime
+	    time_dif_ms = time_dif.total_seconds()*1000
 	    
-	      
-	
+	    # If d is pressed, draw
+	    if pressed_key & 0xFF == ord("d"): 
+		print("Draw button pressed!")
+		draw = not draw
 	    
+	    # Place frame in queue only if time has exceeded 30ms, and 
+	    # there are fewer than 4 frames in each queue.
+	    if ((send_frame_queue.qsize() < 4) and (send_hist_queue.qsize() < 4)):
+		start_datetime = current_time 		# Update last send to queue time
+		if is_hand_hist_created:
+		    #print("Hist created")
+		    #frame_data = (frame, hand_hist)	# Frame and hand histogram data
+		    send_frame_queue.put(frame) 	# Put frame in queue
+		    send_hist_queue.put(hand_hist)	# Put histogram in queue
+		
 
+		    # Check if receive_point_queue is not empty
+		    if (not receive_point_queue.empty()):
+			last_receive_time = time.time()
+			far_point = receive_point_queue.get()	# Extract far_point data
+			
+		    
+				
+			if far_point is not None:
+			    curr = far_point
+			   
+			    # Draw dots and interpolate between them 
+			    if draw:
+				if l2_distance(prev, curr) <= draw_thresh:
+				    prev_dot = curr_dot
+				    curr_dot = far_point
+				    draw_dot(far_point)
+				    interpolate(prev_dot,curr_dot)
+				else:
+				    interpolate(prev_dot, curr_dot)
+		
+			    # Update the current and previous points
+			    if prev is None:
+				prev = far_point
+			    else:
+				prev = curr
+			    
+			    
+		else:
+		    frame = draw_rect(frame)
+
+		cv2.imshow("Live Feed", rescale_frame(frame))
+	    
+	    # Break
 	    if pressed_key & 0xFF == ord('q'):
-		break
-		
+		run_flag.value = 0
+		#break
+	    
+	    # Change color when button 17 pressed	
 	    if not GPIO.input(17):
 		change_color()
 	    
+	    # Increase size of brush when button 22 pressed
 	    if not GPIO.input(22):
 		change_radius(True)
 	    
+	    # Decrease size of brush when button 23 pressed
 	    if not GPIO.input(23):
 		change_radius(False)
-		
+	    
+	    # Bailout button 27   
 	    if not GPIO.input(27):
-		print("End game")
-		break
-				
+		run_flag.value = 0
+		print("Quit")
+		#break
+		
 	except KeyboardInterrupt:
-	    break
+	    run_flag.value = 0
+	    
+	   
+	    
+# Function for worker process 1    
+def process_1(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start):
+    while (run_flag.value and capture.isOpened()):
+	startTime = datetime.now()
+	startTime_ms = startTime.second*1000 + startTime.microsecond/1000
+	
+	# If the frame queue is not empty and it is worker 1's turn
+	if ((not send_frame_queue.empty()) and (not send_hist_queue.empty()) and (p_start.value == 1)):
+	    print("Processor 1 working")
+	    mask = send_frame_queue.get()	# Grab the frame
+	    hist = send_hist_queue.get()	# Grab histogram
+	    p_start.value = 2 			# Change to worker 2's turn
+	    
+	    # Calculate far_point
+	    far_point = manage_image_opr(mask, hist)
+	    
+	    # Obtain center and max_contour
+	    ctr, mc = get_centroid(mask, hist)
+	    
+	    # Put far_point back into queue
+	    receive_point_queue.put(far_point)
+	
+	else:
+	    print("Processor 1 did not receive any information, sleeping for 30ms zzz")
+	    time.sleep(0.03)
+	
+	currentTime = datetime.now()
+	currentTime_ms = currentTime.second*1000 + currentTime.microsecond/1000
+
+    print("Quitting Processor 1")	
+    
+# Function for worker process 2    
+def process_2(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start):
+    while (run_flag.value and capture.isOpened()):
+	startTime = datetime.now()
+	startTime_ms = startTime.second*1000 + startTime.microsecond/1000
+	
+	# If the frame queue is not empty and it is worker 1's turn
+	if ((not send_frame_queue.empty()) and (not send_hist_queue.empty()) and (p_start.value == 2)):
+	    print("Processor 2 working")
+	    mask = send_frame_queue.get()	# Grab the frame
+	    hist = send_hist_queue.get()	# Grab histogram
+	    p_start.value = 3 			# Change to worker 2's turn
+	    
+	    # Calculate far_point
+	    far_point = manage_image_opr(mask, hist)
+	    
+	    # Obtain center and max_contour
+	    ctr, mc = get_centroid(mask, hist)
+	    
+	    # Put far_point back into queue
+	    receive_point_queue.put(far_point)
+	
+	else:
+	    print("Processor 2 did not receive any information, sleeping for 30ms zzz")
+	    time.sleep(0.03)
+	
+	currentTime = datetime.now()
+	currentTime_ms = currentTime.second*1000 + currentTime.microsecond/1000
+	
+    print("Quitting Processor 2")
+    
+# Function for worker process 3       
+def process_3(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start):
+    while (run_flag.value and capture.isOpened()):
+	startTime = datetime.now()
+	startTime_ms = startTime.second*1000 + startTime.microsecond/1000
+	
+	# If the frame queue is not empty and it is worker 1's turn
+	if ((not send_frame_queue.empty()) and (not send_hist_queue.empty()) and (p_start.value == 3)):
+	    print("Processor 3 working")
+	    mask = send_frame_queue.get()	# Grab the frame
+	    hist = send_hist_queue.get()	# Grab histogram
+	    p_start.value = 1 			# Change to worker 2's turn
+	    
+	    # Calculate far_point
+	    far_point = manage_image_opr(mask, hist)
+	    
+	    # Obtain center and max_contour
+	    ctr, mc = get_centroid(mask, hist)
+	    
+	    # Put far_point back into queue
+	    receive_point_queue.put(far_point)
+	
+	else:
+	    print("Processor 3 did not receive any information, sleeping for 30ms zzz")
+	    time.sleep(0.03)
+	
+	currentTime = datetime.now()
+	currentTime_ms = currentTime.second*1000 + currentTime.microsecond/1000
+    
+    print("Quitting Processor 3")
+    
+
+# ================== MAIN ================== #
+def main():
+    # Set run_flag to safely exit all processes
+    run_flag = Value('i', 1)
+    
+    # p_start_turn determines worker processing order
+    p_start = Value('i', 1)
+    
+    # Set up queues
+    send_frame_queue = Queue()
+    send_hist_queue = Queue()
+    receive_point_queue = Queue()
+    
+    
+    # Set up four processes: 1 master process, 3 worker processes
+    p0 = Process(target=master_process, args=(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start))
+    p1 = Process(target=process_1, args=(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start))
+    p2 = Process(target=process_2, args=(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start))
+    p3 = Process(target=process_3, args=(run_flag, send_frame_queue, send_hist_queue, receive_point_queue, p_start))
+    
+    # Start and join processes
+    p0.start()
+    p1.start()
+    p2.start()
+    p3.start()
+    
+    p0.join()
+    p1.join()
+    p2.join()
+    p3.join()
 
     cv2.destroyAllWindows()
+    GPIO.cleanup()
     capture.release()
     
 
