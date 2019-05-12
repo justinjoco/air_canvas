@@ -97,7 +97,7 @@ def rescale_frame(frame, wpercent=130, hpercent=130):
     width = int(frame.shape[1] * wpercent / 100)
   #  print("width: " + str(width) "\n height" 
     height = int(frame.shape[0] * hpercent / 100)
-    return cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
+    return cv2.resize(frame, (320, 240), interpolation=cv2.INTER_AREA)
 
 
 def contours(hist_mask_image):
@@ -327,14 +327,15 @@ def main():
     draw_thresh = 20
     
     # buttons 
+    '''
     pygame.draw.circle(screen, BLUE, CENTER_POS, BTN_SIZE) 
     start_btn = font.render("START", True, WHITE)
     start_btn_rect = start_btn.get_rect(center=CENTER_POS)
     screen.blit(start_btn,start_btn_rect)
-    
+    '''
     pygame.display.flip() 
    
-    start = False
+    calibrate = True
 
     while capture.isOpened():
 	try:
@@ -343,13 +344,17 @@ def main():
 	    pressed_key = cv2.waitKey(1)
 	    _, frame = capture.read()
 
+
+	    
+	    '''
 	    if start and draw:
 		
 		quit_surface = font.render('Pause', True, WHITE)
 		rect_quit = quit_surface.get_rect(center=(40,200))
 		screen.blit(quit_surface, rect_quit)
 		
-	   
+	    
+	    
 
 	    for event in pygame.event.get():
                 if (event.type is MOUSEBUTTONDOWN):
@@ -382,12 +387,16 @@ def main():
 			    print("Draw/Not Draw")
 			    draw = not draw
 
-	    # Press z to create hand histogram
 	    '''
+	    # Press z to create hand histogram
+	    
 	    if pressed_key & 0xFF == ord('z'):
 		is_hand_hist_created = True
 		hand_hist = hand_histogram(frame)
-	    '''
+		calibrate = False
+		screen.fill(black)
+		pygame.display.flip() 
+	    
 	    	    
 
 	    if is_hand_hist_created:
@@ -420,7 +429,73 @@ def main():
 	    else:
 		frame = draw_rect(frame)
 
-	    cv2.imshow("Live Feed", rescale_frame(frame))
+	    
+	    
+	    
+	    for event in pygame.event.get():
+		if (event.type is MOUSEBUTTONDOWN):
+		    pos = pygame.mouse.get_pos()
+		elif(event.type is MOUSEBUTTONUP):
+		    pos = pygame.mouse.get_pos()
+		    x, y = pos
+		    if calibrate:
+			if y >= 180 and y <=220 and x>=120 and x<=200:
+			    is_hand_hist_created = True
+			    hand_hist = hand_histogram(frame)
+			    calibrate = False
+			    screen.fill(black)
+			    pygame.display.flip() 
+		    else:
+			if y >= 180 and x <50:
+			    print("Draw/Not Draw")
+			    draw = not draw
+			    
+			if x >= 200 and y <200:
+			    print("Calibrate")
+			    draw = False
+			    is_hand_hist_created = False
+			    calibrate = True
+			    prev = None
+			    curr = None
+			    prev_dot = None
+			    curr_dot = None
+			
+
+	    
+	    
+	    rescaled_frame = rescale_frame(frame)
+	    
+	    if calibrate:
+		#print(rescaled_frame.shape)
+		surface = pygame.surfarray.make_surface(rescaled_frame.transpose(1,0,2)[...,::-1])
+		surface.convert()
+		
+		cal_surface = font.render('Calibrate', True, WHITE)
+		 
+		rect_cal = cal_surface.get_rect(center=(160,200))
+		
+		screen.blit(surface, (0,0))
+		pygame.draw.rect(screen, BLUE, pygame.Rect(120, 190, 80, 20))  
+		screen.blit(cal_surface, rect_cal)
+		
+		
+		pygame.display.flip() 
+		
+	    else:
+		
+		pause_surface = font.render('Draw', True, WHITE)
+		rect_pause = pause_surface.get_rect(center=(40,200))
+		screen.blit(pause_surface, rect_pause)
+		
+		cal_surface = font.render('Calibrate', True, WHITE)
+		rect_cal = cal_surface.get_rect(center=(200,200))
+		screen.blit(cal_surface, rect_cal)
+		pygame.display.flip()
+		
+		
+		
+		
+	    cv2.imshow("Live Feed", rescaled_frame)
 	    
 	      
 	
