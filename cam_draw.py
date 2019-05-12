@@ -334,7 +334,7 @@ def main():
     
     pygame.display.flip() 
    
-    
+    start = False
 
     while capture.isOpened():
 	try:
@@ -343,7 +343,13 @@ def main():
 	    pressed_key = cv2.waitKey(1)
 	    _, frame = capture.read()
 
-
+	    if start and draw:
+		
+		quit_surface = font.render('Pause', True, WHITE)
+		rect_quit = quit_surface.get_rect(center=(40,200))
+		screen.blit(quit_surface, rect_quit)
+		
+	   
 
 	    for event in pygame.event.get():
                 if (event.type is MOUSEBUTTONDOWN):
@@ -351,22 +357,30 @@ def main():
                 elif(event.type is MOUSEBUTTONUP):
                     pos = pygame.mouse.get_pos()
                     x, y = pos
-                    if y >= CENTER_POS[1]-BTN_SIZE and y<=CENTER_POS[1]+BTN_SIZE  and x>=CENTER_POS[0] - BTN_SIZE  and x<=CENTER_POS[0] + BTN_SIZE:
-                        if not is_hand_hist_created and not draw: 
-			    is_hand_hist_created = True
-			    hand_hist = hand_histogram(frame)
-			    screen.fill(black)
-			    
-			    
-			    pygame.draw.circle(screen, GREEN, CENTER_POS, BTN_SIZE) 
-			    draw_btn = font.render("DRAW", True, WHITE)
-			    draw_btn_rect = draw_btn.get_rect(center=CENTER_POS)
-			    screen.blit(draw_btn,draw_btn_rect)
-			    pygame.display.flip() 
-			else:
-			    if not draw:
-				draw = not draw
+		    if not start:
+			if y >= CENTER_POS[1]-BTN_SIZE and y<=CENTER_POS[1]+BTN_SIZE  and x>=CENTER_POS[0] - BTN_SIZE  and x<=CENTER_POS[0] + BTN_SIZE:
+			    if not is_hand_hist_created and not draw: 
+				is_hand_hist_created = True
+				hand_hist = hand_histogram(frame)
 				screen.fill(black)
+				
+				
+				pygame.draw.circle(screen, GREEN, CENTER_POS, BTN_SIZE) 
+				draw_btn = font.render("DRAW", True, WHITE)
+				draw_btn_rect = draw_btn.get_rect(center=CENTER_POS)
+				screen.blit(draw_btn,draw_btn_rect)
+				pygame.display.flip() 
+			    else:
+				if not draw:
+				    draw = not draw
+				    start = True
+				    screen.fill(black)
+				    
+		    else: 
+			if y >= 180 and x <50:
+			   
+			    print("Draw/Not Draw")
+			    draw = not draw
 
 	    # Press z to create hand histogram
 	    '''
