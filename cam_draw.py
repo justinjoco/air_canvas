@@ -495,7 +495,7 @@ def main():
 		
 		
 		
-	    cv2.imshow("Live Feed", rescaled_frame)
+	    #cv2.imshow("Live Feed", rescaled_frame)
 	    
 	      
 	
