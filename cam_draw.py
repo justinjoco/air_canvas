@@ -19,10 +19,13 @@ import RPi.GPIO as GPIO
 import os
 
 # Set environment variables
+'''
 os.putenv('SDL_VIDEODRIVER','fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb1')
 os.putenv('SDL_MOUSEDRV', 'TSLIB')      # track mouse clicks 
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
+'''
+
 
 GPIO.setmode(GPIO.BCM)
 
@@ -318,13 +321,13 @@ def main():
     videoWidth = capture.get(cv2.CAP_PROP_FRAME_WIDTH)
     videoHeight = capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
-    print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
+   # print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
 	
     prev = None
     curr = None
     prev_dot = None
     curr_dot = None
-    draw_thresh = 20
+    draw_thresh = 10
     
     # buttons 
     '''
@@ -446,11 +449,11 @@ def main():
 			    screen.fill(black)
 			    pygame.display.flip() 
 		    else:
-			if y >= 180 and x <50:
+			if y >= 120 and x <160:
 			    print("Draw/Not Draw")
 			    draw = not draw
 			    
-			if x >= 200 and y <200:
+			if x >= 160 and y >120:
 			    print("Calibrate")
 			    draw = False
 			    is_hand_hist_created = False
@@ -488,14 +491,14 @@ def main():
 		screen.blit(pause_surface, rect_pause)
 		
 		cal_surface = font.render('Calibrate', True, WHITE)
-		rect_cal = cal_surface.get_rect(center=(200,200))
+		rect_cal = cal_surface.get_rect(center=(260,200))
 		screen.blit(cal_surface, rect_cal)
 		pygame.display.flip()
 		
 		
 		
 		
-	    #cv2.imshow("Live Feed", rescaled_frame)
+	  #  cv2.imshow("Live Feed", rescaled_frame)
 	    
 	      
 	
