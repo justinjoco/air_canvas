@@ -19,12 +19,13 @@ import RPi.GPIO as GPIO
 import os
 
 # Set environment variables
-'''
+
+
 os.putenv('SDL_VIDEODRIVER','fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb1')
 os.putenv('SDL_MOUSEDRV', 'TSLIB')      # track mouse clicks 
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
-'''
+
 
 
 GPIO.setmode(GPIO.BCM)
@@ -44,7 +45,7 @@ size = width, height = 320, 240
 black = 0,0,0
 screen = pygame.display.set_mode(size)
 
-
+pygame.mouse.set_visible(False)
 
 # Brush settings 
 radius = 2
@@ -55,7 +56,7 @@ BLUE = 0,0,255
 WHITE = 255,255,255
 BLACK = 0,0,0
 
-colors = [RED, GREEN, BLUE, WHITE, BLACK]
+colors = [RED, GREEN, BLUE]
 
 color_index = 0
 curr_color = RED
@@ -453,7 +454,7 @@ def main():
 			    print("Draw/Not Draw")
 			    draw = not draw
 			    
-			if x >= 160 and y >120:
+			elif x >= 160 and y >120:
 			    print("Calibrate")
 			    draw = False
 			    is_hand_hist_created = False
@@ -462,7 +463,8 @@ def main():
 			    curr = None
 			    prev_dot = None
 			    curr_dot = None
-			
+			else:
+			    change_color()
 
 	    
 	    
