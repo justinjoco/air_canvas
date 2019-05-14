@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Air Canvas</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
+  <div id="top" class="container-fluid">
+    <a class="navbar-brand" href="#slides">Air Canvas</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#objective">Objective</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#intro">Introduction</a>
+        </li>
+       
+       <li class="nav-item">
+          <a class="nav-link" href="#design">Design and Testing</a>
+        </li>
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link" href="#results">Results</a>
+        </li>
+
+      
+        <li class="nav-item">
+          <a class="nav-link" href="#conclusion">Conclusions</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#future">Future Work</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#appendix">Appendix</a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+</nav>
+
+<div id="slides" class="carousel slide" data-ride="carousel">
+
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="img/full_build.JPG">
+      <div class="carousel-caption" style="position: absolute;
+  top: 50%;
+  transform: translateY(-50%)">
+        <h1 class="display-2">Air Canvas</h1>
+        <h4 >Justin Joco and Stephanie Lin</h4>
+       
+      
+       
+
+          <a href="https://github.com/justinjoco/air_canvas" class="btn btn-primary" target="_blank">View Code</a>
+
+         
+        </div>
+      </div>
+
+
+        
+      
+    </div>
+    
+
+</div>
+
+
+
+<div class="container-fluid" id="objective">
+
+  <div class="row jumbotron" >
+      <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+      <h1 >Objective</h1>
+
+      
+      <p>To create a simple prototype for a drawing tool that uses hand gesture recognition software to paint on a PiTFT screen. Core objectives include:</p>
+      <ul>
+        <li>Using OpenCV to recognize the pointer finger.</li>
+        <li>Mapping coordinates extracted from hand recognition software to PyGame to produce a drawing. 
+</li>
+        <li>Implementing additional features such as color change, size change, and both on-screen and physical buttons.</li>
+      </ul> 
+      </div>
+  </div>
+
+
+</div>
+
+
+
+
+<div class="container-fluid" id="introduction">
+  <h1 id="intro">Introduction</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+
+
+
+
+<div class="container-fluid" id="design">
+<h1>Design and Testing</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+
+
+<div class="container-fluid" id="results">
+<h1>Results</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+
+<div class="container-fluid" id="conclusion">
+<h1>Conclusion</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+
+<div class="container-fluid" id="future">
+<h1>Future Work</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+
+<div class="container-fluid" id="appendix">
+<h1>Appendix</h1>
+  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
+    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+    </p>
+  </div>
+</div>
+
+  <footer>
+      
+    <div class="container-fluid padding">
+
+     <p> ECE 5725 Final Project, Copyright &copy; 2019 <br>
+      Justin Joco and Stephanie Lin</p>
+    
+    </div>
+    
+  </footer>
+
+</body>
+</html>
