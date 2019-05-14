@@ -6,9 +6,7 @@ html, body{
   width: 100%;
   font-family: 'Poppins', sans-serif;
   color: #222;
- 
 }
-
 
 
 p{
@@ -68,8 +66,8 @@ p{
 }
 
 .btn-primary {
-  background-color: #0000A0;
-  border: 1px solid #0000A0;
+  background-color: #27bc42;
+  border: 1px solid #27bc42;
 }
 
 .btn-primary:hover {
@@ -80,7 +78,7 @@ p{
 .jumbotron{
   padding: 1rem;
   border-radius: 0;
-  background-color: #ff6961  ;
+  background-color: #92f442  ;
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
