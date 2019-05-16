@@ -80,8 +80,9 @@ screen.fill(black)
 #Create pygame font
 font = pygame.font.Font(None, 20)
 
-#Reference: 
+
 # ======= SAMPLE_CAM3.PY CODE ============ # <--- NOT OURS
+#Reference: https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m
 hand_hist = None
 traverse_point = []
 total_rectangle = 9
@@ -216,6 +217,7 @@ def draw_circles(frame, traverse_point):
 	
 	
 # ================= TRACE HAND ================= # <-- NOT OURS
+#Reference: https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m
 
 #Finds the center of the hand
 def get_centroid(frame, hand_hist):
