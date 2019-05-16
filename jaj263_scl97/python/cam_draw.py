@@ -3,7 +3,7 @@ ECE 5725 FINAL PROJECT
 Stephanie Lin (scl97), Justin Joco (jaj263)
 AIR CANVAS
 
-sample_linked.py
+cam_draw.py
 '''
 
 import cv2
@@ -460,14 +460,8 @@ def main():
 				screen.blit(cal_surface, rect_cal)
 				pygame.display.flip()
 			
-			
-			
-			
-		  #  cv2.imshow("Live Feed", rescaled_frame)
-		    
-		      
 		
-		    
+		       
 
 		  	#If we hit button 17, change the color
 		    if not GPIO.input(17):
@@ -489,10 +483,10 @@ def main():
 		except KeyboardInterrupt:
 		    break
 
-	#OpenCV cleanup before program ending
+	#OpenCV and PIO cleanup before program ending
     cv2.destroyAllWindows()
     capture.release()
-    
+    GPIO.cleanup()
 
 
 # Run main() 
