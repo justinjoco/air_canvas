@@ -74,8 +74,9 @@
       
        
 
-          <a href="https://github.com/justinjoco/air_canvas" class="btn btn-primary" target="_blank">View Code</a>
-
+          
+          <a href="https://github.com/justinjoco/air_canvas" class="btn btn-primary" target="_blank">Visit Git Repo</a>
+          <a href="#commented_code" class="btn btn-secondary">View Code</a>
          
         </div>
       </div>
@@ -294,14 +295,14 @@
         <br>
         <div>
           <h2>Multiprocessor Mayhem</h2>
-           <p>To increase processing speed, we attempted to make use of the RaspberryPi’s four cores with Python’s multiprocessing module. However, this endeavor revealed negligible speedup in frame rate and also created some timing issues that caused our program to track very erratically. We attributed this problem to timing issues between master and slave processes. Since our program requires frames to be passed and processed in order, any out-of-order delivery into queue from worker to master process resulted in faulty coordinate tracking. This rendered our tracking of previous and current points useless because we could no longer accurately interpolate between drawn dots. Using the htop command in the terminal, we were able to see that the program was utilizing 100% of all four cores without producing significant improvements to frame rate. Notably, using only process to run our project still used a sizable amount of power in all four cores. Thus, we decided it was not worthwhile to pursue multiple processors. 
+           <p>To increase processing speed, we attempted to increase the usage of the RaspberryPi’s four cores with Python’s multiprocessing module. However, this endeavor revealed negligible speedup in frame rate and also created some timing issues that caused our program to track very erratically. We attributed this problem to timing issues between master and slave processes. Since our program requires frames to be passed and processed in order, any out-of-order delivery into queue from worker to master process resulted in faulty coordinate tracking. This rendered our tracking of previous and current points useless because we could no longer accurately interpolate between drawn dots. Using the htop command in the terminal, we were able to see that the program was utilizing 100% of all four cores without producing significant improvements to frame rate. Notably, using only process to run our project still used a sizable amount of power in all four cores. Thus, we decided it was not worthwhile to pursue multiple processors. 
 A screenshot of our mischievous multiprocess implementation can be seen in Figure 8:</p>
 
 <br>
          
             <figure class="figure text-center">
               <img src="img/mcore1.png" alt="multicore" style="width:40%;">
-              <figcaption class="figure-caption">Figure 8: Using multiprocess to run Air Canvas</figcaption>
+              <figcaption class="figure-caption">Figure 8: Using multiprocessing library to run Air Canvas</figcaption>
             </figure>
       
     </div>
@@ -464,7 +465,7 @@ ls /dev/video0
        </ul>
    </div>
 <br>
-   <div>
+   <div id="commented_code">
       <h2>Commented Code</h2>
        <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #DD4422">&#39;&#39;&#39;</span>
 <span style="color: #DD4422">ECE 5725 FINAL PROJECT</span>

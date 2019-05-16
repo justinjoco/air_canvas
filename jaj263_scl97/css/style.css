@@ -88,6 +88,12 @@ figcaption.figure-caption {
   border: 1px solid #563d7c;
 }
 
+.btn-secondary {
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
+}
+
+
 .jumbotron{
   padding: 1rem;
   border-radius: 0;
