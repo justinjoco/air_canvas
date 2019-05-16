@@ -3,10 +3,9 @@ ECE 5725 FINAL PROJECT
 Stephanie Lin (scl97), Justin Joco (jaj263)
 AIR CANVAS
 
-sample_linked.py
+cam_draw.py
 '''
 
-from multiprocessing import Process, Queue, Value, Lock, Array
 import cv2
 import numpy as np
 import time
@@ -19,16 +18,15 @@ import RPi.GPIO as GPIO
 import os
 
 # Set environment variables
-
-
 os.putenv('SDL_VIDEODRIVER','fbcon')
 os.putenv('SDL_FBDEV', '/dev/fb1')
 os.putenv('SDL_MOUSEDRV', 'TSLIB')      # track mouse clicks 
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
 
 
-
+#Set GPIO mode
 GPIO.setmode(GPIO.BCM)
+
 
 GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Change color
 GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP) #Size up
@@ -49,15 +47,18 @@ pygame.mouse.set_visible(False)
 
 # Brush settings 
 radius = 2
-coords = [(200,120),(200,121),(200,122),(200,123)]
+
+#Colors
 RED = 255,0,0
 GREEN = 0,255,0
 BLUE = 0,0,255
 WHITE = 255,255,255
 BLACK = 0,0,0
 
+#Create color list
 colors = [RED, GREEN, BLUE]
 
+#Initialize drawing color
 color_index = 0
 curr_color = RED
 
@@ -67,24 +68,21 @@ R_MARGIN = 310
 T_MARGIN = 10
 B_MARGIN = 230
 
+
+
 BTN_SIZE = 50
 CENTER_POS = 160,120
 
+#Fill first screen with black
 screen.fill(black)
 
 
+#Create pygame font
 font = pygame.font.Font(None, 20)
-'''
-textsurface = myfont.render('Some Text', True, WHITE)
-rect = textsurface.get_rect(center=(30,30))
-screen.blit(textsurface, rect) 
-pygame.display.flip()
-'''
 
 
-# ======= SAMPLE_CAM3.PY CODE ============ #
-
-# Setup screen variables 
+# ======= SAMPLE_CAM3.PY CODE ============ # <--- NOT OURS
+#Reference: https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m
 hand_hist = None
 traverse_point = []
 total_rectangle = 9
@@ -96,14 +94,14 @@ hand_rect_two_y = None
 
 
 
-
+#Rescales the output frame to 320 x 240 screen
 def rescale_frame(frame, wpercent=130, hpercent=130):
     width = int(frame.shape[1] * wpercent / 100)
   #  print("width: " + str(width) "\n height" 
     height = int(frame.shape[0] * hpercent / 100)
     return cv2.resize(frame, (320, 240), interpolation=cv2.INTER_AREA)
 
-
+#Finds the contours of the hand
 def contours(hist_mask_image):
     gray_hist_mask_image = cv2.cvtColor(hist_mask_image, cv2.COLOR_BGR2GRAY)
     ret, thresh = cv2.threshold(gray_hist_mask_image, 0, 255, 0)
@@ -126,7 +124,7 @@ def max_contour(contour_list):
 
         return contour_list[max_i]
 
-
+#Draws the rectangles for calibration
 def draw_rect(frame):
     rows, cols, _ = frame.shape
     global total_rectangle, hand_rect_one_x, hand_rect_one_y, hand_rect_two_x, hand_rect_two_y
@@ -149,7 +147,7 @@ def draw_rect(frame):
 
     return frame
 
-
+#Attains a histogram of the colors that encapsulate the above retangles
 def hand_histogram(frame):
     global hand_rect_one_x, hand_rect_one_y
 
@@ -189,7 +187,7 @@ def centroid(max_contour):
     else:
         return None
 
-
+#Find the farthest point of hand from the centroid
 def farthest_point(defects, contour, centroid):
     if defects is not None and centroid is not None:
         s = defects[:, 0][:, 0]
@@ -211,15 +209,17 @@ def farthest_point(defects, contour, centroid):
         else:
             return None
 
-# Draw circles on screen
+# Draw circles on screen at specified point on the screen
 def draw_circles(frame, traverse_point):
     if traverse_point is not None:
         for i in range(len(traverse_point)):
             cv2.circle(frame, traverse_point[i], int(5 - (5 * i * 3) / 100), [0, 255, 255], -1)
 	
 	
-# ================= TRACE HAND ================= #
+# ================= TRACE HAND ================= # <-- NOT OURS
+#Reference: https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m
 
+#Finds the center of the hand
 def get_centroid(frame, hand_hist):
     hist_mask_image = hist_masking(frame, hand_hist)
     contour_list = contours(hist_mask_image)
@@ -261,6 +261,7 @@ def manage_image_opr(frame, hand_hist):
 	return None
 # =================== PYGAME DRAWING ==================== #
 
+#Checks if a coordinate is within the margins we define
 def in_bounds(coord):
     return (coord[0] >= L_MARGIN) and (coord[0] <= R_MARGIN) and (coord[1] >= T_MARGIN) and (coord[1] <= B_MARGIN)
     
@@ -268,10 +269,11 @@ def in_bounds(coord):
 # Draw a dot
 # Screen res is 640x480
 
+#Measures the Euclidean distance between two points 
 def l2_distance(prev_coord, curr_coord):
     return math.sqrt((curr_coord[0]-prev_coord[0])**2 + (curr_coord[1]-prev_coord[1])**2)
 
-
+#Draws a line between two drawn dots
 def interpolate(prev_coord, curr_coord):
     
     if (prev_coord is not None) and (curr_coord is not None):
@@ -281,7 +283,7 @@ def interpolate(prev_coord, curr_coord):
 	pygame.draw.line(screen, curr_color, prev_scaled, curr_scaled, radius*2)
 	pygame.display.flip()
 
-
+#Draws a dot at a given point in the Pygame display
 def draw_dot(coord): 
     if (coord != None):
 	coord_scaled = 320 - int(coord[0]/2), int(coord[1]/2)
@@ -294,6 +296,7 @@ def draw_dot(coord):
 	   #pygame.draw.line(screen, BLUE, prev_scaled, coord_scaled, radius*2)
 	    pygame.display.flip()
 		      
+#Changes the color by iterating through the color list defined earlier
 def change_color():
     global curr_color, color_index
     color_index +=1 
@@ -301,7 +304,8 @@ def change_color():
 	color_index = 0
     curr_color = colors[color_index]
     print(curr_color)
-    
+ 
+#Increases or decreases the drawn dot and line sizes   
 def change_radius(up_or_down):
     global radius
     if up_or_down:
@@ -314,220 +318,177 @@ def change_radius(up_or_down):
 # ================== MAIN ================== #
 def main():
     global hand_hist
+
+    #Do not draw on init
     draw = False
     is_hand_hist_created = False
+
+    #Create a capture variable
     capture = cv2.VideoCapture(0)
     
     screen.fill(black)
     videoWidth = capture.get(cv2.CAP_PROP_FRAME_WIDTH)
     videoHeight = capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
-   # print("default resolution " + str(int(videoWidth)) + " x "+ str(int(videoHeight)))
+
 	
+	#Intialize the current and previous drawn points
     prev = None
     curr = None
     prev_dot = None
     curr_dot = None
     draw_thresh = 10
     
-    # buttons 
-    '''
-    pygame.draw.circle(screen, BLUE, CENTER_POS, BTN_SIZE) 
-    start_btn = font.render("START", True, WHITE)
-    start_btn_rect = start_btn.get_rect(center=CENTER_POS)
-    screen.blit(start_btn,start_btn_rect)
-    '''
+
     pygame.display.flip() 
    
+   	#Calibrate histogram on input
     calibrate = True
 
     while capture.isOpened():
-	try:
+		try:
+				
+				# wait for keypress 
+		    pressed_key = cv2.waitKey(1)
+
+		    #Read a frame from video capture
+		    _, frame = capture.read()
+
+
+
+
+		    if is_hand_hist_created:
+				far_point = manage_image_opr(frame, hand_hist)
+				
+				# Draw dot located at farthest point
+				ctr, mc = get_centroid(frame, hand_hist)
+				
+				
+				if far_point is not None:
+				    curr = far_point
+				   
+				   	#If we're drawing, make sure that we only draw dots if two subsequent dots are within a certain distance from each other
+				   	#Interpolate between two drawn dots
+				    if draw:
+						if l2_distance(prev, curr) <= draw_thresh:
+						    prev_dot = curr_dot
+						    curr_dot = far_point
+						    draw_dot(far_point)
+						    interpolate(prev_dot,curr_dot)
+						else:
+						    interpolate(prev_dot, curr_dot)
 			
-			# wait for keypress 
-	    pressed_key = cv2.waitKey(1)
-	    _, frame = capture.read()
-
-
-	    
-	    '''
-	    if start and draw:
-		
-		quit_surface = font.render('Pause', True, WHITE)
-		rect_quit = quit_surface.get_rect(center=(40,200))
-		screen.blit(quit_surface, rect_quit)
-		
-	    
-	    
-
-	    for event in pygame.event.get():
-                if (event.type is MOUSEBUTTONDOWN):
-                    pos = pygame.mouse.get_pos()
-                elif(event.type is MOUSEBUTTONUP):
-                    pos = pygame.mouse.get_pos()
-                    x, y = pos
-		    if not start:
-			if y >= CENTER_POS[1]-BTN_SIZE and y<=CENTER_POS[1]+BTN_SIZE  and x>=CENTER_POS[0] - BTN_SIZE  and x<=CENTER_POS[0] + BTN_SIZE:
-			    if not is_hand_hist_created and not draw: 
-				is_hand_hist_created = True
-				hand_hist = hand_histogram(frame)
-				screen.fill(black)
 				
-				
-				pygame.draw.circle(screen, GREEN, CENTER_POS, BTN_SIZE) 
-				draw_btn = font.render("DRAW", True, WHITE)
-				draw_btn_rect = draw_btn.get_rect(center=CENTER_POS)
-				screen.blit(draw_btn,draw_btn_rect)
-				pygame.display.flip() 
-			    else:
-				if not draw:
-				    draw = not draw
-				    start = True
-				    screen.fill(black)
+				    if prev is None:
+						prev = far_point
+				    else:
+						prev = curr
+				# Interpolate
 				    
-		    else: 
-			if y >= 180 and x <50:
-			   
-			    print("Draw/Not Draw")
-			    draw = not draw
-
-	    '''
-	    # Press z to create hand histogram
-	    
-	    if pressed_key & 0xFF == ord('z'):
-		is_hand_hist_created = True
-		hand_hist = hand_histogram(frame)
-		calibrate = False
-		screen.fill(black)
-		pygame.display.flip() 
-	    
-	    	    
-
-	    if is_hand_hist_created:
-		far_point = manage_image_opr(frame, hand_hist)
-		
-		# Draw dot located at farthest point
-		ctr, mc = get_centroid(frame, hand_hist)
-		
-		if pressed_key & 0xFF == ord("d"): draw = not draw
-		if far_point is not None:
-		    curr = far_point
-		   
-		    if draw:
-			if l2_distance(prev, curr) <= draw_thresh:
-			    prev_dot = curr_dot
-			    curr_dot = far_point
-			    draw_dot(far_point)
-			    interpolate(prev_dot,curr_dot)
-			else:
-			    interpolate(prev_dot, curr_dot)
-	
-		
-		    if prev is None:
-			prev = far_point
+				    
 		    else:
-			prev = curr
-		# Interpolate
+				frame = draw_rect(frame)
+
 		    
 		    
-	    else:
-		frame = draw_rect(frame)
+		    #Go through the pygame events
+		    for event in pygame.event.get():
+				if (event.type is MOUSEBUTTONDOWN):
+				    pos = pygame.mouse.get_pos()
+				elif(event.type is MOUSEBUTTONUP):
+				    pos = pygame.mouse.get_pos()
+				    x, y = pos
 
-	    
-	    
-	    
-	    for event in pygame.event.get():
-		if (event.type is MOUSEBUTTONDOWN):
-		    pos = pygame.mouse.get_pos()
-		elif(event.type is MOUSEBUTTONUP):
-		    pos = pygame.mouse.get_pos()
-		    x, y = pos
-		    if calibrate:
-			if y >= 180 and y <=220 and x>=120 and x<=200:
-			    is_hand_hist_created = True
-			    hand_hist = hand_histogram(frame)
-			    calibrate = False
-			    screen.fill(black)
-			    pygame.display.flip() 
-		    else:
-			if y >= 120 and x <160:
-			    print("Draw/Not Draw")
-			    draw = not draw
+				    #If we're calibrating, go to draw screen and create hand histogram if calibrate button is pressed
+				    if calibrate:
+						if y >= 180 and y <=220 and x>=120 and x<=200:
+						    is_hand_hist_created = True
+						    hand_hist = hand_histogram(frame)
+						    calibrate = False
+						    screen.fill(black)
+						    pygame.display.flip() 
+
+					#If we're drawing, 
+					#if we hit the draw button, trigger drawing on and off
+					#if we hit the calibrate button, disable drawing, reintialize dot variables, and go back to calibrate screen
+					#If we hit anywhere on the screen that is not a button, rotate through the color list
+				    else:
+						if y >= 120 and x <160:
+						    print("Draw/Not Draw")
+						    draw = not draw
+						    
+						elif x >= 160 and y >120:
+						    print("Calibrate")
+						    draw = False
+						    is_hand_hist_created = False
+						    calibrate = True
+						    prev = None
+						    curr = None
+						    prev_dot = None
+						    curr_dot = None
+						else:
+						    change_color()
+
 			    
-			elif x >= 160 and y >120:
-			    print("Calibrate")
-			    draw = False
-			    is_hand_hist_created = False
-			    calibrate = True
-			    prev = None
-			    curr = None
-			    prev_dot = None
-			    curr_dot = None
-			else:
-			    change_color()
-
-	    
-	    
-	    rescaled_frame = rescale_frame(frame)
-	    
-	    if calibrate:
-		#print(rescaled_frame.shape)
-		surface = pygame.surfarray.make_surface(rescaled_frame.transpose(1,0,2)[...,::-1])
-		surface.convert()
-		
-		cal_surface = font.render('Calibrate', True, WHITE)
-		 
-		rect_cal = cal_surface.get_rect(center=(160,200))
-		
-		screen.blit(surface, (0,0))
-		pygame.draw.rect(screen, BLUE, pygame.Rect(120, 190, 80, 20))  
-		screen.blit(cal_surface, rect_cal)
-		
-		
-		pygame.display.flip() 
-		
-	    else:
-		
-		pause_surface = font.render('Draw', True, WHITE)
-		rect_pause = pause_surface.get_rect(center=(40,200))
-		screen.blit(pause_surface, rect_pause)
-		
-		cal_surface = font.render('Calibrate', True, WHITE)
-		rect_cal = cal_surface.get_rect(center=(260,200))
-		screen.blit(cal_surface, rect_cal)
-		pygame.display.flip()
-		
-		
-		
-		
-	  #  cv2.imshow("Live Feed", rescaled_frame)
-	    
-	      
-	
-	    
-
-	    if pressed_key & 0xFF == ord('q'):
-		break
-		
-	    if not GPIO.input(17):
-		change_color()
-	    
-	    if not GPIO.input(22):
-		change_radius(True)
-	    
-	    if not GPIO.input(23):
-		change_radius(False)
-		
-	    if not GPIO.input(27):
-		print("End game")
-		break
+		    #Rescale the display frame to 320 x 240 pixels
+		    rescaled_frame = rescale_frame(frame)
+		    
+		    #Draw the calibrate button on the live cam screen if we're calibrating
+		    if calibrate:
+				#print(rescaled_frame.shape)
+				surface = pygame.surfarray.make_surface(rescaled_frame.transpose(1,0,2)[...,::-1])
+				surface.convert()
 				
-	except KeyboardInterrupt:
-	    break
+				cal_surface = font.render('Calibrate', True, WHITE)
+				 
+				rect_cal = cal_surface.get_rect(center=(160,200))
+				
+				screen.blit(surface, (0,0))
+				pygame.draw.rect(screen, BLUE, pygame.Rect(120, 190, 80, 20))  
+				screen.blit(cal_surface, rect_cal)
+				
+				
+				pygame.display.flip() 
+			
+			#Render the draw and quit buttons on the drawing page
+		    else:
+			
+				pause_surface = font.render('Draw', True, WHITE)
+				rect_pause = pause_surface.get_rect(center=(40,200))
+				screen.blit(pause_surface, rect_pause)
+				
+				cal_surface = font.render('Calibrate', True, WHITE)
+				rect_cal = cal_surface.get_rect(center=(260,200))
+				screen.blit(cal_surface, rect_cal)
+				pygame.display.flip()
+			
+		
+		       
 
+		  	#If we hit button 17, change the color
+		    if not GPIO.input(17):
+				change_color()
+		    
+		    #If we hit button 22, increase the drawn dot size
+		    if not GPIO.input(22):
+				change_radius(True)
+		    
+		    #If we hit button 23, decrease dot size
+		    if not GPIO.input(23):
+				change_radius(False)
+			
+			#If we hit button 27, end the program
+		    if not GPIO.input(27):
+				print("End game")
+				break
+					
+		except KeyboardInterrupt:
+		    break
+
+	#OpenCV and PIO cleanup before program ending
     cv2.destroyAllWindows()
     capture.release()
-    
+    GPIO.cleanup()
 
 
 # Run main() 
