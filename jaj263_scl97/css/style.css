@@ -13,6 +13,13 @@ p{
   font-size: 120%;
 }
 
+.center{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
 li{
 
     font-size: 120%;
