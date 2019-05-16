@@ -163,7 +163,7 @@
      <h2>OpenCV</h2>
        <p>We began our project by searching for open source hand gesture recognition software that utilized OpenCV in combination with Python. In doing so, our project’s design changed as we discovered different image processing algorithms. Our primitive implementation sought to use hand gestures to control our color and size variables. To do so, we first set out to create an image mask that would separate the hand from the background. With some trial and error using OpenCV, we successfully captured an image, Gaussian blurred it, and applied a binary mask to starkly contrast the hand shape from the background. This is a method obtained from Izane’s Finger Detection tutorial1, chosen because of its use of convexity detection; in other words, determining the valleys between the fingers. However, we discovered that the camera’s sensitivity to the lab room’s lighting made this a difficult endeavor, and we often encountered extraneous silhouettes in our processed image. </p>
 
-       <p>We then discovered a suitable finger detection algorithm by Amar Pandey2 , which first takes a color histogram of the palm to adapt to changing light conditions. Using a grid of 9 small rectangles, pixel data from each rectangular region is used to create a color histogram. The current image is captured and processed when the user presses Z on the keyboard. The histogram is then used in a built-in OpenCV function, cv2.calcBackProject, to separate the features in an image. In this case, the program is separating all pixels containing the appropriate colors from the rest of the frame. The image is then smoothed via thresholding and filtering, resulting in a frame that contains the hand alone. From here, the contour of the image is found. According to the OpenCV website, contours are curves which join continuous points of the same color or intensity, and are used for shape analysis and detection3. From the contour, Pandey’s algorithm detects convexity defects, which indicate where the fingers might be. Using built-in contour functions, the algorithm returns the center of the largest contour found as well as the farthest point along the contour from that center point.  This proved to be very handy because with some abstraction, we could extract the farthest point coordinate to map to our drawing functions. The finger tracking algorithm can be seen in Figure 2.</p>
+       <p>We then discovered a suitable finger detection algorithm by Amar Pandey2 , which first takes a color histogram of the palm to adapt to changing light conditions. Using a grid of 9 small rectangles, pixel data from each rectangular region is used to create a color histogram. The current image is captured and processed when the user presses Z on the keyboard. The histogram is then used in a built-in OpenCV function, <code> cv2.calcBackProject </code>, to separate the features in an image. In this case, the program is separating all pixels containing the appropriate colors from the rest of the frame. The image is then smoothed via thresholding and filtering, resulting in a frame that contains the hand alone. From here, the contour of the image is found. According to the OpenCV website, contours are curves which join continuous points of the same color or intensity, and are used for shape analysis and detection3. From the contour, Pandey’s algorithm detects convexity defects, which indicate where the fingers might be. Using built-in contour functions, the algorithm returns the center of the largest contour found as well as the farthest point along the contour from that center point.  This proved to be very handy because with some abstraction, we could extract the farthest point coordinate to map to our drawing functions. The finger tracking algorithm can be seen in Figure 2.</p>
 
         <br>
    
@@ -228,7 +228,7 @@
          <br>
 
 
-         <p>Furthermore, we finished connecting the remaining physical PiTFT buttons to their corresponding functions. The two middle buttons, GPIO pins 22 and 23, increase and decrease brush size respectively. The final button acts as a quit button that bails out of the program. Figure ### shows brush size changes in one drawing.</p>
+         <p>Furthermore, we finished connecting the remaining physical PiTFT buttons to their corresponding functions. The two middle buttons, GPIO pins 22 and 23, increase and decrease brush size respectively. The final button acts as a quit button that bails out of the program. Figure 5 shows brush size changes in one drawing.</p>
 
    <br>
         
@@ -278,11 +278,11 @@
        <p>Overall, we achieved the goals we set out to accomplish and learned a considerable amount about OpenCV, multicore processing, and PyGame programming in the process. In our debugging process, we also encountered some problems involving the PiTFT touchscreen, which we were able to solve by investigating the operating system updates we’d installed during the process of our lab. Our demonstration of Air Canvas is shown in the video below.</p>
 
 <br>
-<!--
-        <div align="center" class="embed-responsive  embed-responsive-16by9">
-          <video class="embed-responsive-item" src="img/AirCanvas.mp4" controls></video>
+
+        <div class="embed-responsive  embed-responsive-16by9 text-center">
+          <video class="embed-responsive-item" src="img/AirCanvas_small.mp4" controls></video>
         </div>
--->
+
 <br>
        <div>
         <h2>OpenCV Trial and Error</h2>
