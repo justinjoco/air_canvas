@@ -12,6 +12,11 @@ html, body{
 p{
   font-size: 120%;
 }
+
+li{
+
+    font-size: 120%;
+}
 .card{
   margin: auto;
   max-width: 28rem;

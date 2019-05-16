@@ -6,7 +6,7 @@
   <title>Air Canvas</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-   <link rel="stylesheet" type="text/css" href="style.css">
+   <link rel="stylesheet" type="text/css" href="css/style.css">
 
     <script src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md navbar-light bg-light sticky-top">
+<nav class="navbar navbar-expand-md navbar-light bg-light fixed-top">
   <div id="top" class="container-fluid">
     <a class="navbar-brand" href="#slides">Air Canvas</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive">
@@ -30,7 +30,7 @@
           <a class="nav-link" href="#objective">Objective</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#intro">Introduction</a>
+          <a class="nav-link" href="#introduction">Introduction</a>
         </li>
        
        <li class="nav-item">
@@ -64,7 +64,7 @@
 
   <div class="carousel-inner">
     <div class="carousel-item active">
-      <img src="img/full_build.JPG">
+      <img src="img/full_build.jpg">
       <div class="carousel-caption" style="position: absolute;
   top: 50%;
   transform: translateY(-50%)">
@@ -113,62 +113,269 @@
 
 
 
-<div class="container-fluid" id="introduction">
-  <h1 id="intro">Introduction</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+
+<div class="container-fluid padding" id="introduction">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Introduction</h1>
+      <br>
+       <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
     </p>
+
+    </div>
+    
+    
   </div>
 </div>
 
 
 
+<div class="container-fluid padding" id="design">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Design and Testing</h1>
+      <br>
+      <div>
+      <h2>Design Overview</h2>
+       <p>The basic goal of Air Canvas is to map the coordinates of the user’s pointer finger to the screen, where colored circles are drawn and connected to simulate a crude brush stroke. Our project consisted of three hardware devices: a Raspberry Pi board, a PiTFT display screen, and a Raspberry Pi Camera. The PiTFT screen is connected to the RPi’s 40-pin connector, and the camera module is attached directly into the camera port. We designated each of the PiTFT’s physical buttons as program controls:</p>
+         <ul>
+      <li>Pin 17: color change between red, green, and blue</li>
+       <li>Pin 22: increase brush size</li>
+        <li>Pin 23: decrease brush size</li>
+         <li>Pin 27: quit/end program</li>
+    </ul>
+    <p>A basic visual of Air Canvas can be seen in Figure 1:</p>
+     
+    <center>
+     <figure class="figure">
+      <img src="img/project.png">
+      <figcaption class="figure-caption">Figure 1: Project overview</figcaption>
+      </figure>
+    </center>
+
+  </div>
+  
+    <div>
+     <h2>OpenCV</h2>
+       <p>We began our project by searching for open source hand gesture recognition software that utilized OpenCV in combination with Python. In doing so, our project’s design changed as we discovered different image processing algorithms. Our primitive implementation sought to use hand gestures to control our color and size variables. To do so, we first set out to create an image mask that would separate the hand from the background. With some trial and error using OpenCV, we successfully captured an image, Gaussian blurred it, and applied a binary mask to starkly contrast the hand shape from the background. This is a method obtained from Izane’s Finger Detection tutorial1, chosen because of its use of convexity detection; in other words, determining the valleys between the fingers. However, we discovered that the camera’s sensitivity to the lab room’s lighting made this a difficult endeavor, and we often encountered extraneous silhouettes in our processed image. </p>
+
+       <p>We then discovered a suitable finger detection algorithm by Amar Pandey2 , which first takes a color histogram of the palm to adapt to changing light conditions. Using a grid of 9 small rectangles, pixel data from each rectangular region is used to create a color histogram. The current image is captured and processed when the user presses Z on the keyboard. The histogram is then used in a built-in OpenCV function, cv2.calcBackProject, to separate the features in an image. In this case, the program is separating all pixels containing the appropriate colors from the rest of the frame. The image is then smoothed via thresholding and filtering, resulting in a frame that contains the hand alone. From here, the contour of the image is found. According to the OpenCV website, contours are curves which join continuous points of the same color or intensity, and are used for shape analysis and detection3. From the contour, Pandey’s algorithm detects convexity defects, which indicate where the fingers might be. Using built-in contour functions, the algorithm returns the center of the largest contour found as well as the farthest point along the contour from that center point.  This proved to be very handy because with some abstraction, we could extract the farthest point coordinate to map to our drawing functions. The finger tracking algorithm can be seen in Figure 2</p>
 
 
-<div class="container-fluid" id="design">
-<h1>Design and Testing</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
-    </p>
+       <center>
+       <figure class="figure">
+      <img src="img/predraw2_livefeed.png">
+      <figcaption class="figure-caption">Figure 2: The OpenCV algorithm displays a trail of yellow dots tracking history of farthest points from the center of the hand, namely the fingertip. The current farthest point is highlighted with a red ring. The center of the hand is indicated by the pink dot. 
+</figcaption>
+      </figure>
+    </center>
+
+       <p>We abstracted a function that would calculate the farthest point (representing the index fingertip when held up) and pass it along to our PyGame drawing functions. In doing so, we made some modifications and adaptations. First, we had to map proportionately from the live camera feed to the PiTFT screen, which was exactly half the size of the feed. Next, to eliminate the use of the keyboard, we mapped the histogram trigger to an on-screen PiTFT button. Furthermore, due to the abundance of natural-toned colors in our lab room, we decided to use blue nitrile gloves during our work for a stronger contrast with the background. The bold color helped the color histogram better determine the location of the user’s hand. </p>
+    </div>
+
+      <div>
+        <h2>PyGame Drawing</h2>
+        <p>Our next step was to independently develop the PyGame side of the project, which supported the PiTFT drawing functionality. First, we chose our method of drawing: as with most digital art programs, the brush head is a single shape, and a brush stroke is, simply put, the chosen shape repeated over the length of the stroke. We decided to draw very simple circles at a set of linearly spaced coordinates in PyGame using the function <code>pygame.draw.circle()</code>Figure ^^^: Drawing with interpolation and finger tracking. The circles were spaced such that the overlap of each dot would resemble a connected line. We were able to display two straight lines in PyGame with this method. Additionally, we added a list of colors — red, blue, and green — to toggle between as desired, as well as a function to increase and decrease the radius of our brush head. With the PyGame end completed, we set off to combine the two main functionalities of our project.</p>
+
+      </div>
+      <div>
+         <h2>Combination of OpenCV and PyGame</h2>
+        </div>
+
+        <div>
+         <h2>Coordinates and Interpolation</h2>
+
+         <p>The combined code required us to feed the coordinates acquired from OpenCV processing to the PyGame program we had written. We soon realized that the frequency of images processed was too slow to draw a continuous line. To solve this problem, we chose to interpolate between the current point of drawing and the previous point. After creating these variables, we also reduced any jitter produced by erroneous detection by setting a threshold distance between current and previous point. Should the distance between the two exceed 10 pixels, the current point would not be considered for drawing and discarded as an outlier coordinate. We then interpolated between valid current and previous points by drawing more circles of the same color and radius with the aforementioned method of linearly filling in space. Figure ### is a screenshot of a drawing made with finger tracking and simple interpolation. </p>
+         
+         <center>
+         <figure class="figure">
+      <img src="img/drawing3.png">
+      <figcaption class="figure-caption">Figure ^^^: Drawing with interpolation and finger tracking.</figcaption>
+      </figure>
+    </center>
+
+
+    </div>
+
+      <div>
+         <h2>Multiprocessing Attempt</h2>
+         <p>At this point in our project, we attempted to implement our program using all four cores of the Raspberry Pi. The intended implementation involved capturing the feed with a master process and handing off singular frames via queue to three worker processes for image analysis. The master process would then receive the coordinates of the pointer finger from its workers and draw accordingly. However, using multiple cores did not pan out as desired. The results are discussed below.</p>
+       </div>
+
+       <div>
+         <h2>Implementing buttons and transitioning to the PiTFT</h2>
+         <p>After deciding to stick with one core, we completed the rest of our project design by polishing the front end code, adding brush modification functions, and removing any dependencies on external devices (monitor, mouse, keyboard, etc). </p>
+
+         <p>First, we designated user friendly screens: one was the calibration screen, and the other was the actual drawing screen. On the latter, we added two on-screen buttons and a tap functionality. The “draw” button toggles between active drawing and inactivity, allowing the user to stop and start drawing as desired. The “calibration” button allows the user to return to the original calibration screen to start a new drawing or re-calibrate as desired. Finally, we noticed that our physical button mapped to Pin 27 was acting faulty (perhaps due to its long history of being pressed aggressively in previous labs), and would only register clicks with excessive force. Thus, we decided to opt for a screen tap color toggle function, allowing the user to change between brush colors by tapping anywhere on the top half of the screen. Figure ### shows the three brush colors in one drawing.  </p>
+
+
+         <center>
+         <figure class="figure">
+      <img src="img/colors.png">
+      <figcaption class="figure-caption">Figure ^^^: Tri-color functionality</figcaption>
+      </figure>
+    </center>
+
+         <p>Furthermore, we finished connecting the remaining physical PiTFT buttons to their corresponding functions. The two middle buttons, GPIO pins 22 and 23, increase and decrease brush size respectively. The final button acts as a quit button that bails out of the program. Figure ### shows brush size changes in one drawing.</p>
+
+
+         <center>
+          <figure class="figure">
+      <img src="img/size.png">
+      <figcaption class="figure-caption">Figure ^^^: Changing the size of the brush.</figcaption>
+      </figure>
+    </center>
+
+         <p>Next, we transitioned the entire program onto the PiTFT to complete the front end. At this point in our project, we display the live camera feed separately from the drawing screen. The two are combined to be displayed on the PiTFT by first….?</p>
+
+         <p>We also found that the image and color arrays were reversed, so we first flipped those values to retrieve the original image. Finally, to complete the initial calibration screen, a blue “calibrate” button was overlaid on the live feed. When pressed, the hand color histogram is captured and the program switches to the drawing screen. The calibration screen can be seen in Figure ###</p>
+         
+         <center>
+         <figure class="figure">
+      <img src="img/calibrate.png">
+      <figcaption class="figure-caption">Figure ^^^: The calibration screen.</figcaption>
+      </figure>
+    </center>
+
+
+         <p>Lastly, we swapped out the wall socket power source for a portable phone battery to make our project entirely self-contained and portable. Figure ### is our RPi and PiTFT with its parts labeled.</p>
+
+         <center>
+         <figure class="figure">
+      <img src="img/diagram.jpg">
+      <figcaption class="figure-caption">Figure ^^^: The final setup.</figcaption>
+      </figure>
+    </center>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+<div class="container-fluid padding" id="results">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Results</h1>
+       <p>Overall, we achieved the goals we set out to accomplish and learned a considerable amount about OpenCV, multicore processing, and PyGame programming in the process. In our debugging process, we also encountered some problems involving the PiTFT touchscreen, which we were able to solve by investigating the operating system updates we’d installed during the process of our lab. </p>
+
+       <div>
+        <h2>OpenCV Trial and Error</h2>
+        <p>Our first and foremost challenge was understanding OpenCV. At first, while experimenting with various open source programs, we were using an older version of OpenCV. To our dismay, heavy image processing dropped our frame rate to around 4 frames per second, even when we only applied a few basic filters, and the lag on the camera feed was unbearably slow. Additionally, our desired open source program by Pandy was only compatible with the newest version of OpenCV. We decided to upgrade our OpenCV, and doing so increased our frame rate dramatically. While our program still showed considerable lag, it was fast enough to be considered functional. </p>
+      </div>
+
+      <div>
+         <h2>The Jitters and the Lab Gloves</h2>
+          <p>We encountered difficulties with hand contour detection, which in turn affected our ability to draw smoothly on the PiTFT. As mentioned in the design description, occasional erroneous calculations caused the farthest point coordinate to leap erratically to the edges of the screen. The addition of threshold conditions and usage of blue gloves helped reduce the causes of detection jitters, but we also discovered another bug in the process. Since the algorithm looks for the farthest point from the center of the contour, a wrist-length glove triggers the program to register the cuff of the glove as the farthest point instead of the finger. This was discovered during much trial and error, when the highlighted current point frequently bounced to the wrist area. There was not much code correction we could do for this, so we decided on simply rolling up the cuff to limit the glove to only the fingers and the palm. Doing so solved the rest of our jitter problems, but this specific bug opens up room for improvement of the hand detection algorithm in OpenCV.</p>
+        </div>
+        <div>
+          <h2>Multicore Mayhem</h2>
+           <p>To increase processing speed, we attempted to make use of the RaspberryPi’s four cores with Python’s multiprocessing module. However, this endeavor revealed negligible speedup in frame rate and also created some timing issues that caused our program to track very erratically. We attributed this problem to timing issues between master and slave processes. Since our program requires frames to be passed and processed in order, any out-of-order delivery into queue from worker to master process resulted in faulty coordinate tracking. This rendered our tracking of previous and current points useless because we could no longer accurately interpolate between drawn dots. Using the htop command in the terminal, we were able to see that the program was utilizing a majority of all four cores without producing significant improvements to frame rate, and so we decided it was not worthwhile to pursue multicore processing for this project.
+A screenshot of our mischievous multicore implementation can be seen in Figure ###:</p>
+         <center>
+            <figure class="figure">
+              <img src="img/mcore1.png">
+              <figcaption class="figure-caption">Figure ^^^: Using multicore to run Air Canvas</figcaption>
+            </figure>
+        </center>
+    </div>
+
+    <div>
+          <h2>Funky Touchscreens and Mashed Buttons</h2>
+           <p>When we first made the move from testing with an external monitor for our display to the PiTFT screen, we discovered that an operating system update was interfering with our touchscreen capabilities. We resorted to using a short piece of code written earlier in the course. The purpose of the code was to register touch events on the PiTFT screen and display the coordinates. When run, we repeatedly tapped the same corner of the screen, but received wildly varying coordinates. We consulted the course staff and transferred our SD card to another RPi to ensure that this was not a hardware issue. The same issue occurred on the second board, proving that there was an issue with our software. It turned out that… ***JUSTIN: can you talk about what file changed during the update that messed it up? I believe you can find it in Lab 2 where it discusses the “before” and “after” update</p>
+            <p>During our Air Canvas trial runs, we also found that our previously working color-change button was a fickle fiend. Forceful pushes were required to trigger a click event, and even then it was still operating irregularly. To debug, we used a few print statements to indicate when a button press was properly registered by the PiTFT and discovered that GPIO pin 27 was frequently unresponsive. Thus, we decided to transfer its paired functionality into a touchscreen event. This was a simple change which registered any touch on the top half of the screen as the trigger to cycle through our list of colors. </p>
+
+        </div>   
+    
+
+    </div>
+    
   </div>
 </div>
 
 
 
-<div class="container-fluid" id="results">
-<h1>Results</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
-    </p>
+<div class="container-fluid padding" id="conclusion">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Conclusions</h1>
+       <p>We consider our project to be an overall success! With Air Canvas, we have achieved a hands-free drawing program that uses OpenCV to detect the user’s pointer finger. Colorful lines can be drawn wherever the user desires and the brush can even be modified. It is truly like drawing in the air! </p>
+       <p>Of course, Air Canvas has many flaws that may be interesting areas of research in the future. The first is the issue of frame rate: image processing slowed down the camera feed and produced a cumbersome lag that impedes on the usability of the program. It would be best optimized with multicore functionality, which we attempted in this project. If the timing problems with queueing data between processes can be managed such that frame information is passed in order, perhaps Air Canvas can be upgraded to run authentically in real time. Moreover, we relied on open source OpenCV code for hand recognition, which had its own issues that we worked hard to circumvent. </p>
+   
+      <div>
+       <h2>Acknowledgements</h2>
+     </div>
+
+
+    </div>
+    
   </div>
 </div>
 
 
-<div class="container-fluid" id="conclusion">
-<h1>Conclusion</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
-    </p>
+<div class="container-fluid padding" id="future">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Future Work</h1>
+      <p>Given more time to work on this project, we would improve hand contour recognition, explore our original Air Canvas goals, and try to understand the multicore module. </p>
+      <p>To enhance hand gesture tracking, we would have to delve more into OpenCV. There are many different methods of contour analysis, but in this particular algorithm, it may be worthwhile to take a look at the color histogram used to create the contours in question. Furthermore, we could experiment with different interpolation methods. PyGame includes a line drawing method (pygame.draw.line()) that could prove useful in producing smoother, cleaner lines. On the same vein, implementing a variety of brush shapes, textures, and even an eraser would make Air Canvas more robust as a drawing program. Allowing the user to save their final work or watch their drawing process as a playback animation could also be unique features that resemble real creativity software. Perhaps there would even be a way to connect Air Canvas to actual digital drawing programs such as Adobe Photoshop, Clip Studio Paint, or GIMP! Finally, we could make significant strides by figuring out how multicore processing works with in-order information processing.
+</p>
+    </div>
+     
+    
   </div>
 </div>
 
 
-<div class="container-fluid" id="future">
-<h1>Future Work</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
+<div class="container-fluid padding" id="appendix">
+  <div class="row welcome">
+    
+    <div class="col-md-12">
+      <h1>Appendix</h1>
+  
+    <div>
+      <h2>Project Members</h2>
+      <center>
+      <figure class="figure">
+      <img src="img/steph_and_justin.JPG">
+      <figcaption class="figure-caption">A caption for the above image.</figcaption>
+      </figure>
+    </center>
+      <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.</p>
+  </div>
+   
+
+
+  <div>
+      <h2>Project Parts</h2>
+       <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
     </p>
+   </div>
+
+   <div>
+      <h2>References</h2>
+       <ul>
+         <li>“Finger Detection” by Izane: <a href="https://github.com/lzane/Fingers-Detection-using-OpenCV-and-Python">https://github.com/lzane/Fingers-Detection-using-OpenCV-and-Python</a></li>
+         <li>“Finger Detection and Tracking” by Amesh Prakash Pandey: <a href="https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m">https://dev.to/amarlearning/finger-detection-and-tracking-using-opencv-and-python-586m</a></li>
+        <li>OpenCV contours: <a href="https://docs.opencv.org/3.4.2/d4/d73/tutorial_py_contours_begin.html">https://docs.opencv.org/3.4.2/d4/d73/tutorial_py_contours_begin.html</a></li>
+        <li>“AutoTurret” by : <a href="https://courses.ece.cornell.edu/ece5990/ECE5725_Spring2018_Projects/fy57_xz522_AutoTurret/index.html">https://courses.ece.cornell.edu/ece5990/ECE5725_Spring2018_Projects/fy57_xz522_AutoTurret/index.html</a></li>
+        <li>Drawing in PyGame: <a href="https://www.pygame.org/docs/ref/draw.html">https://www.pygame.org/docs/ref/draw.html</a></li>
+         <li>“Guide to Set Up Pi Camera & Some OpenCV Image Processing Basics” by Xitang Zhao: <a href="https://blackboard.cornell.edu/bbcswebdav/pid-4087974-dt-content-rid-24070270_1/courses/12153_2019SP/12153_2019SP_ImportedContent_20190408043030/Pi_camera_and_OpenCV_v1%281%29.pdf">https://blackboard.cornell.edu/bbcswebdav/pid-4087974-dt-content-rid-24070270_1/courses/12153_2019SP/12153_2019SP_ImportedContent_20190408043030/Pi_camera_and_OpenCV_v1%281%29.pdf</a></li>
+
+
+       </ul>
+   </div>
+    
+    
+    
   </div>
 </div>
 
-
-<div class="container-fluid" id="appendix">
-<h1>Appendix</h1>
-  <div class="col-xs-12 col-sm-12 col-md-9 col-lg-9 col-xl-10" >
-    <p>Air Canvas is a hands-free digital drawing canvas that utilizes a Raspberry Pi, a PiCamera, and OpenCV to recognize and map hand gestures onto a PiTFT screen. The user’s “brush” can be modified in size and color by using built-in buttons. The direction of the brush is controlled completely using open source OpenCV software and modified to map the pointer finger onto the screen using Pygame following a calibration screen to measure and record the color of the user’s hand. The idea for Air Canvas was a result of our interest in digital drawing and smart photo recognition software.
-    </p>
-  </div>
-</div>
 
   <footer>
       
