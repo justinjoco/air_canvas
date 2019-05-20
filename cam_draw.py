@@ -356,7 +356,7 @@ def main():
 
 
 
-		if is_hand_hist_created:
+			if is_hand_hist_created:
 				far_point = manage_image_opr(frame, hand_hist)
 				
 				# Draw dot located at farthest point
@@ -382,7 +382,7 @@ def main():
 						prev = far_point
 					else:
 						prev = curr
-		
+	
 
 			else:
 				frame = draw_rect(frame)
@@ -427,9 +427,9 @@ def main():
 						else:
 							change_color()
 
-		    #Rescale the display frame to 320 x 240 pixels
+			#Rescale the display frame to 320 x 240 pixels
 			rescaled_frame = rescale_frame(frame)
-		    
+			
 			#Draw the calibrate button on the live cam screen if we're calibrating
 			if calibrate:
 				#print(rescaled_frame.shape)
