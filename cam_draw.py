@@ -307,11 +307,9 @@ def change_color():
 #Increases or decreases the drawn dot and line sizes   
 def change_radius(up_or_down):
 	global radius
-	if up_or_down:
-		radius+=1
-	else:
-		radius-=1
-    
+	if up_or_down: radius+=1
+	else: radius-=1
+
 	
 
 # ================== MAIN ================== #
